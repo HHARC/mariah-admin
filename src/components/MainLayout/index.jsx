@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { AiOutlineDashboard, AiOutlineFile } from "react-icons/ai";
-import { RiContactsLine, RiQuestionAnswerLine, RiImage2Line } from "react-icons/ri";
+import { AiOutlineDashboard } from "react-icons/ai";
+import { RiImage2Line } from "react-icons/ri";
 import { MdOutlineFeaturedPlayList } from "react-icons/md";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { IoIosNotifications } from "react-icons/io";
 import { Layout, Menu, Grid, theme } from "antd";
-import { RiBankLine, RiMoneyDollarCircleLine, RiCoupon3Line } from "react-icons/ri";
 
 
 
@@ -25,7 +23,7 @@ const MainLayout = () => {
     const navigate = useNavigate();
     const screens = useBreakpoint();
 
-    const { user, updateUser } = useAuth()
+    const { updateUser } = useAuth()
 
     useEffect(() => {
         const handleResize = () => {

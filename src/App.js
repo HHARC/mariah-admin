@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './components/MainLayout';
 import SubServices from './Pages/SubServices';
@@ -10,7 +10,7 @@ import { ConfigProvider } from "antd";
 import { useAuth } from './contexts/authContext';
 
 const ProtectedRoute = ({ children }) => {
-    const { user, token } = useAuth();
+    const { user } = useAuth();
 
     if (!user) {
         return <Navigate to="/login" replace />;

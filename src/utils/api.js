@@ -2,7 +2,8 @@ import axios from "axios";
 
 export const api = axios.create({
     // baseURL: "http://localhost:8080/", // Development URL
-    baseURL: "https://api.artspiree.com/", // Production URL
+    // baseURL: "https://api.artspiree.com/", // Old Production URL
+    baseURL: "https://mariah-universe-backend.vercel.app/", // New Backend URL
     withCredentials: true,
 });
 

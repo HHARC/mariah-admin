@@ -10,7 +10,7 @@ import { api } from '../../utils/api';
 function AdminLogin() {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const navigate = useNavigate();
-    const { user, updateUser } = useAuth()
+    const { updateUser } = useAuth()
 
     
     const login = async (creds) => {

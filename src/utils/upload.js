@@ -4,9 +4,6 @@ const cloudinaryUpload = async (
     file,
     { folder = '' } = {}
 ) => {
-    const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-    const preset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', "react-upload-v1");

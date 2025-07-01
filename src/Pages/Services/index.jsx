@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { api } from '../../utils/api';
+import { servicesService } from '../../services';
 
 const Services = () => {
     // State for services list
@@ -26,23 +26,19 @@ const Services = () => {
     // State to track expanded service for showing subservices
     const [expandedServiceId, setExpandedServiceId] = useState(null);
 
-    // API endpoint
-    const API_URL = 'api/services';
-
     // Fetch services from API
     const fetchServices = async () => {
         try {
             setLoading(true);
-            const response = await api.get(API_URL);
-            // Access the data array inside the response
-            if (response.data && response.data.data && Array.isArray(response.data.data)) {
-                setServices(response.data.data);
+            const result = await servicesService.getAll();
+            
+            if (result.success) {
+                setServices(result.data);
+                setError(null);
             } else {
-                console.error('Unexpected API response format:', response.data);
-                setError('Received unexpected data format from the server.');
+                setError(result.error || 'Failed to fetch services');
                 setServices([]);
             }
-            setError(null);
         } catch (err) {
             setError('Failed to fetch services. Please try again later.');
             console.error('Error fetching services:', err);
@@ -99,32 +95,28 @@ const Services = () => {
 
         try {
             setLoading(true);
+            let result;
 
             if (editingId) {
                 // Update existing service
-                await api.put(`${API_URL}/${editingId}`, submitData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                result = await servicesService.update(editingId, submitData);
             } else {
                 // Add new service
-                await api.post(API_URL, submitData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                result = await servicesService.create(submitData);
             }
 
-            // Refresh services list
-            fetchServices();
+            if (result.success) {
+                // Refresh services list
+                fetchServices();
 
-            // Reset form
-            setFormData({ name: '', description: '', image: null });
-            setImagePreview(null);
-            setEditingId(null);
-
-            setError(null);
+                // Reset form
+                setFormData({ name: '', description: '', image: null });
+                setImagePreview(null);
+                setEditingId(null);
+                setError(null);
+            } else {
+                setError(result.error || 'Failed to save service. Please try again.');
+            }
         } catch (err) {
             setError('Failed to save service. Please try again.');
             console.error('Error saving service:', err);
@@ -156,8 +148,14 @@ const Services = () => {
         if (window.confirm('Are you sure you want to delete this service?')) {
             try {
                 setLoading(true);
-                await api.delete(`${API_URL}/${id}`);
-                fetchServices();
+                const result = await servicesService.delete(id);
+                
+                if (result.success) {
+                    fetchServices();
+                    setError(null);
+                } else {
+                    setError(result.error || 'Failed to delete service. Please try again.');
+                }
             } catch (err) {
                 setError('Failed to delete service. Please try again.');
                 console.error('Error deleting service:', err);

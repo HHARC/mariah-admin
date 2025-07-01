@@ -5,31 +5,42 @@ import '../AdminLogin/AdminLogin.css';
 import { useNavigate } from 'react-router-dom';
 import img from '../../assets/images/logo.png'
 import { useAuth } from '../../contexts/authContext';
-import { api } from '../../utils/api';
+import { authService } from '../../services';
 
 function AdminLogin() {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { updateUser } = useAuth()
 
     
     const login = async (creds) => {
+        setLoading(true);
         try {
-            const res = await api.post('api/auth/login', creds, { withCredentials: true })
-            return { status: res.data.status, message: res.data.message }
+            const result = await authService.login(creds);
+            
+            if (result.success && result.status === 200) {
+                return { success: true, status: result.status, message: result.message }
+            } else {
+                return { success: false, error: result.error || 'Login failed' }
+            }
         } catch (error) {
-            console.error("Failed to log in");
-            toast.error("Failed to log in")
+            console.error("Login error:", error);
+            return { success: false, error: 'Login failed' }
+        } finally {
+            setLoading(false);
         }
     }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        
+        if (loading) return; // Prevent multiple submissions
 
-        const res = await login(credentials)
+        const result = await login(credentials)
 
-        if (res.status === 200) {
-            toast.success('Login Successful!');
+        if (result.success) {
+            toast.success(result.message || 'Login Successful!');
 
             updateUser(credentials)
 
@@ -37,7 +48,7 @@ function AdminLogin() {
                 navigate('/Services');
             }, 2000);
         } else {
-            toast.error('Invalid username or password');
+            toast.error(result.error || 'Invalid username or password');
         }
     };
 
@@ -79,8 +90,20 @@ function AdminLogin() {
                                 name="password"
                             />
                         </Form.Group>
-                        <Button style={{ backgroundColor: '#7F89F0', borderColor: '#0d8341', color: 'var(--bs-white)' }} type="submit" className="mt-3 w-100">
-                            Login
+                        <Button 
+                            style={{ backgroundColor: '#7F89F0', borderColor: '#0d8341', color: 'var(--bs-white)' }} 
+                            type="submit" 
+                            className="mt-3 w-100"
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Logging in...
+                                </>
+                            ) : (
+                                'Login'
+                            )}
                         </Button>
                     </Form>
                 </Col>

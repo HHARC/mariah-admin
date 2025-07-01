@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { api } from '../../utils/api';
+import { subServicesService, servicesService } from '../../services';
 
 const SubServices = () => {
     const [subServices, setSubServices] = useState([]);
@@ -21,9 +21,6 @@ const SubServices = () => {
 
     const [selectedServiceFilter, setSelectedServiceFilter] = useState('');
 
-    const SUB_SERVICES_API_URL = 'api/sub-services';
-    const SERVICES_API_URL = 'api/services';
-
     useEffect(() => {
         fetchSubServices();
         fetchServices();
@@ -32,14 +29,15 @@ const SubServices = () => {
     const fetchSubServices = async () => {
         try {
             setLoading(true);
-            const response = await api.get(SUB_SERVICES_API_URL);
-            if (response.data?.data && Array.isArray(response.data.data)) {
-                setSubServices(response.data.data);
+            const result = await subServicesService.getAll();
+            
+            if (result.success) {
+                setSubServices(result.data);
+                setError(null);
             } else {
-                setError('Unexpected API response format.');
+                setError(result.error || 'Failed to fetch sub-services');
                 setSubServices([]);
             }
-            setError(null);
         } catch (err) {
             setError('Failed to fetch sub-services.');
             setSubServices([]);
@@ -50,9 +48,9 @@ const SubServices = () => {
 
     const fetchServices = async () => {
         try {
-            const response = await api.get(SERVICES_API_URL);
-            if (response.data?.data && Array.isArray(response.data.data)) {
-                setServices(response.data.data);
+            const result = await servicesService.getAll();
+            if (result.success) {
+                setServices(result.data);
             } else {
                 setServices([]);
             }
@@ -87,21 +85,23 @@ const SubServices = () => {
 
         try {
             setLoading(true);
+            let result;
+            
             if (editingId) {
-                await api.put(`${SUB_SERVICES_API_URL}/${editingId}`, submitData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                result = await subServicesService.update(editingId, submitData);
             } else {
-                await api.post(SUB_SERVICES_API_URL, submitData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                result = await subServicesService.create(submitData);
             }
 
-            fetchSubServices();
-            setFormData({ name: '', description: '', price: '', image: null, serviceId: '' });
-            setImagePreview(null);
-            setEditingId(null);
-            setError(null);
+            if (result.success) {
+                fetchSubServices();
+                setFormData({ name: '', description: '', price: '', image: null, serviceId: '' });
+                setImagePreview(null);
+                setEditingId(null);
+                setError(null);
+            } else {
+                setError(result.error || 'Failed to save sub-service.');
+            }
         } catch (err) {
             setError('Failed to save sub-service.');
         } finally {
@@ -125,9 +125,15 @@ const SubServices = () => {
         if (window.confirm('Are you sure you want to delete this sub-service?')) {
             try {
                 setLoading(true);
-                await api.delete(`${SUB_SERVICES_API_URL}/${id}`);
-                fetchSubServices();
-            } catch {
+                const result = await subServicesService.delete(id);
+                
+                if (result.success) {
+                    fetchSubServices();
+                    setError(null);
+                } else {
+                    setError(result.error || 'Failed to delete sub-service.');
+                }
+            } catch (err) {
                 setError('Failed to delete sub-service.');
             } finally {
                 setLoading(false);

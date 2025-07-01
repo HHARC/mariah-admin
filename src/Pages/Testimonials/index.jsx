@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { api } from '../../utils/api';
+import { testimonialsService } from '../../services';
 
 const Testimonials = () => {
     // State for testimonials list
@@ -24,20 +24,17 @@ const Testimonials = () => {
     // State to track if we're editing and which testimonial
     const [editingId, setEditingId] = useState(null);
 
-    // API endpoint
-    const API_URL = 'api/testimonials';
-
     // Fetch testimonials from API
     const fetchTestimonials = async () => {
         try {
             setLoading(true);
-            const response = await api.get(API_URL);
-            // Access the data array inside the response
-            if (response.data && response.data.data && Array.isArray(response.data.data)) {
-                setTestimonials(response.data.data);
+            const result = await testimonialsService.getAll();
+            
+            if (result.success) {
+                setTestimonials(result.data);
+                setError(null);
             } else {
-                console.error('Unexpected API response format:', response.data);
-                setError('Received unexpected data format from the server.');
+                setError(result.error || 'Failed to fetch testimonials');
                 setTestimonials([]);
             }
         } catch (err) {
@@ -97,32 +94,28 @@ const Testimonials = () => {
 
         try {
             setLoading(true);
+            let result;
 
             if (editingId) {
                 // Update existing testimonial
-                await api.put(`${API_URL}/${editingId}`, submitData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                result = await testimonialsService.update(editingId, submitData);
             } else {
                 // Add new testimonial
-                await api.post(API_URL, submitData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                result = await testimonialsService.create(submitData);
             }
 
-            // Refresh testimonials list
-            fetchTestimonials();
+            if (result.success) {
+                // Refresh testimonials list
+                fetchTestimonials();
 
-            // Reset form
-            setFormData({ name: '', designation: '', review: '', profile_image: null });
-            setImagePreview(null);
-            setEditingId(null);
-
-            setError(null);
+                // Reset form
+                setFormData({ name: '', designation: '', review: '', profile_image: null });
+                setImagePreview(null);
+                setEditingId(null);
+                setError(null);
+            } else {
+                setError(result.error || 'Failed to save testimonial. Please try again.');
+            }
         } catch (err) {
             setError('Failed to save testimonial. Please try again.');
             console.error('Error saving testimonial:', err);
@@ -155,8 +148,14 @@ const Testimonials = () => {
         if (window.confirm('Are you sure you want to delete this testimonial?')) {
             try {
                 setLoading(true);
-                await api.delete(`${API_URL}/${id}`);
-                fetchTestimonials();
+                const result = await testimonialsService.delete(id);
+                
+                if (result.success) {
+                    fetchTestimonials();
+                    setError(null);
+                } else {
+                    setError(result.error || 'Failed to delete testimonial. Please try again.');
+                }
             } catch (err) {
                 setError('Failed to delete testimonial. Please try again.');
                 console.error('Error deleting testimonial:', err);

@@ -11,6 +11,7 @@ export const API_CONFIG = {
         SUB_SERVICES: "api/sub-services", 
         TESTIMONIALS: "api/testimonials",
         GALLERY: "api/gallery",
+        CATEGORIES: "api/categories",
         
         // Media
         UPLOAD: "api/upload"

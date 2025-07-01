@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Environmental Bubble</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 300vh; /* Allows for scrolling */
+            background: #222; /* Dark theme */
+            overflow-x: hidden;
+            color: #fff; /* Light text for readability */
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="animationCanvas"></canvas>
+    <section style="background-color: #34495e;">Welcome to Our Environmental Mission</section>
+    <section style="background-color: #16a085;">Learn About Our Projects</section>
+    <section style="background-color: #2980b9;">Get Involved and Make a Difference</section>
+    <script>
+        const canvas = document.getElementById('animationCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    
+        let bubbleSize = 20; // Starting size of the bubble
+        let angle = 0; // Starting angle for movement
+    
+        function updateBubble() {
+            const scrollY = window.scrollY;
+            const height = window.innerHeight;
+            const totalScrollHeight = document.body.scrollHeight - height;
+            const scrollPercent = scrollY / totalScrollHeight;
+    
+            bubbleSize = 150 + scrollPercent * (height * 0.5); // Bubble grows based on scroll
+            angle += 0.01; // Decreased angle increment to slow down movement
+            drawBubble();
+            requestAnimationFrame(updateBubble); // Continue animation
+        }
+        function drawBubble() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+            // Create gradient for water-like effect
+            var gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, bubbleSize * 0.1, canvas.width / 2, canvas.height / 2, bubbleSize);
+            gradient.addColorStop(0, 'rgba(0, 191, 255, 0.6)'); // Deep sky blue
+            gradient.addColorStop(0.5, 'rgba(135, 206, 235, 0.5)'); // Sky blue
+            gradient.addColorStop(1, 'rgba(173, 216, 230, 0.4)'); // Light blue
+    
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            // Moving bubble based on sine and cosine
+            ctx.arc(canvas.width / 2 + 100 * Math.sin(angle), canvas.height / 2 + 50 * Math.cos(angle), bubbleSize, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    
+        requestAnimationFrame(updateBubble); // Initial call to start animation
+    </script>
+    
+</body>
+</html>
+    

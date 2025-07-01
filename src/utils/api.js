@@ -1,10 +1,16 @@
 import axios from "axios";
 
+// Get API base URL from environment or use default
+const getApiBaseUrl = () => {
+    return process.env.REACT_APP_API_BASE_URL || "https://mariah-universe-backend.vercel.app/";
+};
+
 export const api = axios.create({
     // baseURL: "http://localhost:8080/", // Development URL
     // baseURL: "https://api.artspiree.com/", // Old Production URL
-    baseURL: "https://mariah-universe-backend.vercel.app/", // New Backend URL
+    baseURL: getApiBaseUrl(), // New Backend URL from environment
     withCredentials: true,
+    timeout: 10000, // 10 second timeout
 });
 
 api.interceptors.request.use(
@@ -55,6 +61,13 @@ api.interceptors.response.use(
             }
         } else {
             console.error("Network or other error:", err);
+            
+            // Provide user-friendly error messages for common network issues
+            if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+                console.error("Backend server is not accessible. Please check if the backend is running.");
+            } else if (err.code === 'TIMEOUT') {
+                console.error("Request timed out. The backend server may be slow to respond.");
+            }
         }
         return Promise.reject(err);
     }

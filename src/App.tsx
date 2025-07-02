@@ -19,6 +19,7 @@ interface ToastState {
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [counts, setCounts] = useState({
     formats: 0,
     vision: 0,
@@ -36,6 +37,10 @@ const Dashboard: React.FC = () => {
 
   const hideToast = () => {
     setToast(prev => ({ ...prev, isVisible: false }));
+  };
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   const fetchCounts = async () => {
@@ -68,6 +73,25 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Auto-collapse on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     fetchCounts();
   }, []);
@@ -91,16 +115,27 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Header onRefresh={handleRefresh} isRefreshing={isRefreshing} />
       
-      <div className="flex">
+      <div className="flex h-screen">
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
           counts={counts}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
         />
         
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
-            {renderActiveTab()}
+        {/* Main Content Area - Now responsive to sidebar state */}
+        <main className={`
+          flex-1 overflow-hidden transition-all duration-300 ease-in-out
+          ${isCollapsed ? 'ml-0' : 'ml-0'}
+        `}>
+          <div className="h-full overflow-y-auto p-6">
+            <div className={`
+              mx-auto transition-all duration-300 ease-in-out
+              ${isCollapsed ? 'max-w-full' : 'max-w-7xl'}
+            `}>
+              {renderActiveTab()}
+            </div>
           </div>
         </main>
       </div>

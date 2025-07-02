@@ -97,11 +97,7 @@ const LoginForm: React.FC = () => {
           </form>
 
           {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-500 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-600">Email: info@mariahuniverse.com</p>
-            <p className="text-xs text-gray-600">Password: qwerty</p>
-          </div>
+          
         </div>
       </div>
     </div>
